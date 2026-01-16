@@ -1,5 +1,5 @@
 -- =========================
--- IMPROVED SCRIPT WITH RED HITBOXES
+-- FULL SCRIPT WITH UI TOGGLE + RED HITBOXES + AUTO-UPGRADE
 -- =========================
 
 -- SERVICES
@@ -19,6 +19,7 @@ local autoUpgradeEnabled = false
 local oneTimeExecuted = false
 local kgfruitRedeemed = false
 local highlightedPlayers = {}
+local detectionEnabled = false -- Controlled by UI toggle
 
 -- =========================
 -- UI
@@ -28,6 +29,7 @@ gui.Name = "StatusUI"
 gui.ResetOnSpawn = false
 gui.Parent = game:GetService("CoreGui")
 
+-- Status label
 local label = Instance.new("TextLabel", gui)
 label.Size = UDim2.new(0, 320, 0, 50)
 label.Position = UDim2.new(0.5, -160, 0, 20)
@@ -36,6 +38,32 @@ label.TextColor3 = Color3.new(1,1,1)
 label.Font = Enum.Font.SourceSansBold
 label.TextScaled = true
 label.Text = "Waiting for nearby player..."
+
+-- Detection toggle button
+local toggleButton = Instance.new("TextButton", gui)
+toggleButton.Size = UDim2.new(0, 160, 0, 50)
+toggleButton.Position = UDim2.new(0.5, -80, 0, 80)
+toggleButton.BackgroundColor3 = Color3.fromRGB(50,50,50)
+toggleButton.TextColor3 = Color3.new(1,1,1)
+toggleButton.Font = Enum.Font.SourceSansBold
+toggleButton.TextScaled = true
+toggleButton.Text = "Detection: Off"
+
+toggleButton.MouseButton1Click:Connect(function()
+    detectionEnabled = not detectionEnabled
+    if detectionEnabled then
+        toggleButton.Text = "Detection: On"
+        toggleButton.BackgroundColor3 = Color3.fromRGB(0,150,0)
+    else
+        toggleButton.Text = "Detection: Off"
+        toggleButton.BackgroundColor3 = Color3.fromRGB(50,50,50)
+        -- Remove all highlights when disabling
+        for player, _ in pairs(highlightedPlayers) do
+            highlightedPlayers[player]:Destroy()
+            highlightedPlayers[player] = nil
+        end
+    end
+end)
 
 -- =========================
 -- HELPERS
@@ -46,7 +74,7 @@ local function fireRemote(...)
     end)
 end
 
--- Detect nearest player within radius
+-- Return first player within detectionRadius, nil if none
 local function getNearbyPlayer()
     if not (LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")) then
         return nil
@@ -68,7 +96,7 @@ local function getNearbyPlayer()
     return nil
 end
 
--- Add or remove red hitbox
+-- Add or remove red hitbox highlight
 local function setHighlight(player, enabled)
     if not player.Character then return end
 
@@ -77,8 +105,8 @@ local function setHighlight(player, enabled)
 
         local highlight = Instance.new("Highlight")
         highlight.Name = "RadiusHighlight"
-        highlight.FillColor = Color3.fromRGB(255, 0, 0)
-        highlight.OutlineColor = Color3.fromRGB(255, 80, 80)
+        highlight.FillColor = Color3.fromRGB(255,0,0)
+        highlight.OutlineColor = Color3.fromRGB(255,80,80)
         highlight.FillTransparency = 0.5
         highlight.OutlineTransparency = 0
         highlight.Parent = player.Character
@@ -122,6 +150,15 @@ end)
 -- =========================
 task.spawn(function()
     while task.wait(0.3) do
+        -- Only run detection if toggle is on
+        if not detectionEnabled then
+            for player, _ in pairs(highlightedPlayers) do
+                highlightedPlayers[player]:Destroy()
+                highlightedPlayers[player] = nil
+            end
+            continue
+        end
+
         if not (LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")) then
             continue
         end
