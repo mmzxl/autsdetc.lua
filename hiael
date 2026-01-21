@@ -8,8 +8,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local LocalPlayer = Players.LocalPlayer
 
 -- SETTINGS
-local detectionRadius = 15
-local delayBeforeTrigger = 5
+local detectionRadius = 23
+local delayBeforeTrigger = 3
 local activatedSoundId = "rbxassetid://17503781665"
 
 -- STATE
@@ -106,8 +106,8 @@ local function setHighlight(player, enabled)
         local highlight = Instance.new("Highlight")
         highlight.Name = "RadiusHighlight"
         highlight.FillColor = Color3.fromRGB(255,0,0)
-        highlight.OutlineColor = Color3.fromRGB(255,80,80)
-        highlight.FillTransparency = 0.5
+        highlight.OutlineColor = Color3.fromRGB(135,206,235)
+        highlight.FillTransparency = 0.3
         highlight.OutlineTransparency = 0
         highlight.Parent = player.Character
 
@@ -146,7 +146,7 @@ task.spawn(function()
 end)
 
 -- =========================
--- PLAYER DETECTION + RED HITBOXES + COUNTDOWN
+-- PLAYER DETECTION + Blue HITBOXES + COUNTDOWN
 -- =========================
 task.spawn(function()
     while task.wait(0.3) do
